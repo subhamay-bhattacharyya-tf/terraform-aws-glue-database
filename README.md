@@ -1,244 +1,111 @@
-# Terraform AWS S3 Bucket Module
+# Terraform AWS Glue Database Module
 
-![Release](https://github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/actions/workflows/ci.yaml/badge.svg)&nbsp;![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonaws&logoColor=white)&nbsp;![Commit Activity](https://img.shields.io/github/commit-activity/t/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Last Commit](https://img.shields.io/github/last-commit/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Release Date](https://img.shields.io/github/release-date/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Repo Size](https://img.shields.io/github/repo-size/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![File Count](https://img.shields.io/github/directory-file-count/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Issues](https://img.shields.io/github/issues/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Top Language](https://img.shields.io/github/languages/top/subhamay-bhattacharyya-tf/terraform-aws-s3)&nbsp;![Custom Endpoint](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bsubhamay/dd8a07e256e7af69c3de7f120a895d97/raw/terraform-aws-s3.json?)
+![Release](https://github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database/actions/workflows/ci.yaml/badge.svg)&nbsp;![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonaws&logoColor=white)&nbsp;![Commit Activity](https://img.shields.io/github/commit-activity/t/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Last Commit](https://img.shields.io/github/last-commit/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Release Date](https://img.shields.io/github/release-date/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Repo Size](https://img.shields.io/github/repo-size/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![File Count](https://img.shields.io/github/directory-file-count/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Issues](https://img.shields.io/github/issues/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Top Language](https://img.shields.io/github/languages/top/subhamay-bhattacharyya-tf/terraform-aws-glue-database)&nbsp;![Custom Endpoint](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bsubhamay/d38e95a090be70513f16e3b1a3529d76/raw/terraform-aws-glue-database.json?)
 
-A Terraform module for creating and managing AWS S3 buckets with optional encryption (SSE-S3 or SSE-KMS), versioning, folder structure, bucket policy, and event notifications.
+A Terraform module for creating and managing AWS Glue Data Catalog databases with support for federated databases, resource links, and Lake Formation permissions.
 
 ## Features
 
-- JSON-style configuration input
-- Server-side encryption with SSE-S3 (AES256) or SSE-KMS
-- Configurable versioning
-- Automatic folder/prefix creation
-- Public access blocked by default
-- Optional bucket policy
-- Event notifications for SQS, SNS, and Lambda
+- Object-style configuration input
+- Optional S3 location URI
+- Lake Formation default table permissions
+- Federated database support
+- Resource link (target database) support
+- Custom parameters
 - Built-in input validation
-
-## Modules
-
-| Module | Description |
-|--------|-------------|
-| [bucket](modules/bucket) | S3 bucket with encryption, versioning, and folders |
-| [event-notification](modules/event-notification) | S3 event notifications for SQS, SNS, and Lambda |
 
 ## Usage
 
-### Basic S3 Bucket
+### Basic Glue Database
 
 ```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
+module "glue_database" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database?ref=main"
 
-  s3_config = {
-    bucket_name = "my-bucket"
+  glue_database_config = {
+    name = "my_database"
   }
 }
 ```
 
-### S3 Bucket with Versioning
+### Glue Database with Description and Location
 
 ```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
+module "glue_database" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database?ref=main"
 
-  s3_config = {
-    bucket_name = "my-versioned-bucket"
-    versioning  = true
+  glue_database_config = {
+    name         = "analytics_database"
+    description  = "Database for analytics data"
+    location_uri = "s3://my-data-bucket/analytics/"
   }
 }
 ```
 
-### S3 Bucket with SSE-S3 Encryption
+### Glue Database with Tags
 
 ```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
+module "glue_database" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database?ref=main"
 
-  s3_config = {
-    bucket_name   = "my-encrypted-bucket"
-    sse_algorithm = "AES256"
+  glue_database_config = {
+    name        = "production_database"
+    description = "Production data catalog"
+    tags = {
+      Environment = "production"
+      Team        = "data-engineering"
+    }
   }
 }
 ```
 
-### S3 Bucket with SSE-KMS Encryption
+### Glue Database with Lake Formation Permissions
 
 ```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
+module "glue_database" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database?ref=main"
 
-  s3_config = {
-    bucket_name   = "my-kms-bucket"
-    sse_algorithm = "aws:kms"
-    kms_key_alias = "my-kms-key"
+  glue_database_config = {
+    name = "secure_database"
+    create_table_default_permission = {
+      permissions = ["SELECT", "ALTER"]
+      principal = {
+        data_lake_principal_identifier = "IAM_ALLOWED_PRINCIPALS"
+      }
+    }
   }
 }
 ```
 
-### S3 Bucket with Folders
+### Resource Link to Another Database
 
 ```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
+module "glue_database" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-glue-database?ref=main"
 
-  s3_config = {
-    bucket_name = "my-data-bucket"
-    bucket_keys = ["raw-data/csv", "raw-data/json", "processed"]
+  glue_database_config = {
+    name = "linked_database"
+    target_database = {
+      catalog_id    = "123456789012"
+      database_name = "source_database"
+      region        = "us-west-2"
+    }
   }
-}
-```
-
-### S3 Bucket with Bucket Policy
-
-```hcl
-module "s3_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/bucket?ref=main"
-
-  s3_config = {
-    bucket_name   = "my-policy-bucket"
-    bucket_policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Sid       = "AllowSSLRequestsOnly"
-          Effect    = "Deny"
-          Principal = "*"
-          Action    = "s3:*"
-          Resource = [
-            "arn:aws:s3:::my-policy-bucket",
-            "arn:aws:s3:::my-policy-bucket/*"
-          ]
-          Condition = {
-            Bool = {
-              "aws:SecureTransport" = "false"
-            }
-          }
-        }
-      ]
-    })
-  }
-}
-```
-
-### S3 Event Notification with SQS
-
-```hcl
-module "s3_notification" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/event-notification?ref=main"
-
-  bucket_name = "my-bucket"
-
-  sqs_notifications = [
-    {
-      id            = "snowpipe-notification"
-      queue_arn     = "arn:aws:sqs:us-east-1:123456789012:my-queue"
-      events        = ["s3:ObjectCreated:*"]
-      filter_prefix = "raw-data/"
-      filter_suffix = ".csv"
-    }
-  ]
-}
-```
-
-### S3 Event Notification with SNS
-
-```hcl
-module "s3_notification" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/event-notification?ref=main"
-
-  bucket_name = "my-bucket"
-
-  sns_notifications = [
-    {
-      id            = "upload-notification"
-      topic_arn     = "arn:aws:sns:us-east-1:123456789012:my-topic"
-      events        = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
-      filter_prefix = "uploads/"
-    }
-  ]
-}
-```
-
-### S3 Event Notification with Lambda
-
-```hcl
-module "s3_notification" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/event-notification?ref=main"
-
-  bucket_name = "my-bucket"
-
-  lambda_notifications = [
-    {
-      id                  = "process-uploads"
-      lambda_function_arn = "arn:aws:lambda:us-east-1:123456789012:function:my-function"
-      events              = ["s3:ObjectCreated:*"]
-      filter_suffix       = ".json"
-    }
-  ]
-}
-```
-
-### S3 Event Notification with Multiple Targets
-
-```hcl
-module "s3_notification" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-aws-s3/modules/event-notification?ref=main"
-
-  bucket_name = "my-bucket"
-
-  sqs_notifications = [
-    {
-      id        = "queue-notification"
-      queue_arn = "arn:aws:sqs:us-east-1:123456789012:my-queue"
-      events    = ["s3:ObjectCreated:*"]
-    }
-  ]
-
-  sns_notifications = [
-    {
-      id        = "topic-notification"
-      topic_arn = "arn:aws:sns:us-east-1:123456789012:my-topic"
-      events    = ["s3:ObjectRemoved:*"]
-    }
-  ]
-
-  lambda_notifications = [
-    {
-      id                  = "lambda-notification"
-      lambda_function_arn = "arn:aws:lambda:us-east-1:123456789012:function:my-function"
-      events              = ["s3:ObjectCreated:Put"]
-      filter_prefix       = "processed/"
-    }
-  ]
 }
 ```
 
 ### Using JSON Input
 
 ```bash
-terraform apply -var='region=us-east-1' -var='s3={"bucket_name":"my-bucket","bucket_keys":["raw-data/csv","raw-data/json"],"versioning":true,"sse_algorithm":"aws:kms","kms_key_alias":"SB-KMS"}'
+terraform apply -var='glue_database_config={"name":"my_database","description":"My data catalog","location_uri":"s3://bucket/path/"}'
 ```
 
 ## Examples
 
-### Bucket Examples
-
 | Example | Description |
 |---------|-------------|
-| [basic](examples/bucket/basic) | Simple S3 bucket |
-| [versioning](examples/bucket/versioning) | S3 bucket with versioning enabled |
-| [sse-s3](examples/bucket/sse-s3) | S3 bucket with SSE-S3 encryption |
-| [sse-kms](examples/bucket/sse-kms) | S3 bucket with SSE-KMS encryption |
-| [folders](examples/bucket/folders) | S3 bucket with folder structure |
-
-### Event Notification Examples
-
-| Example | Description |
-|---------|-------------|
-| [sqs](examples/event-notification/sqs) | S3 event notification to SQS |
-| [sns](examples/event-notification/sns) | S3 event notification to SNS |
-| [lambda](examples/event-notification/lambda) | S3 event notification to Lambda |
+| [basic](examples/basic) | Simple Glue database |
+| [with-location](examples/with-location) | Glue database with S3 location |
 
 ## Requirements
 
@@ -257,109 +124,69 @@ terraform apply -var='region=us-east-1' -var='s3={"bucket_name":"my-bucket","buc
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-| s3_config | Configuration object for S3 bucket | `object` | - | yes |
+| glue_database_config | Configuration object for AWS Glue database | `object` | - | yes |
 
-### s3_config Object Properties
+### glue_database_config Object Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| bucket_name | string | - | Name of the S3 bucket (required) |
-| bucket_keys | list(string) | [] | List of folder prefixes to create |
-| versioning | bool | false | Enable versioning on the bucket |
-| sse_algorithm | string | null | Encryption algorithm: `AES256` (SSE-S3) or `aws:kms` (SSE-KMS) |
-| kms_key_alias | string | null | KMS key alias (required when sse_algorithm is `aws:kms`) |
-| bucket_policy | string | null | JSON bucket policy document |
+| name | string | - | Name of the database (required, lowercase letters, numbers, underscores only) |
+| catalog_id | string | null | ID of the Data Catalog (defaults to AWS account ID) |
+| description | string | null | Description of the database |
+| location_uri | string | null | S3 location of the database |
+| parameters | map(string) | null | Key-value parameters for the database |
+| tags | map(string) | {} | Tags to apply to the database |
+| create_table_default_permission | object | null | Default Lake Formation permissions for tables |
+| federated_database | object | null | Federated database configuration |
+| target_database | object | null | Resource link target database configuration |
+
+### create_table_default_permission Object
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| permissions | list(string) | ["ALL"] | Permissions to grant (ALL, SELECT, ALTER, DROP, DELETE, INSERT) |
+| principal.data_lake_principal_identifier | string | "IAM_ALLOWED_PRINCIPALS" | Principal identifier |
+
+### federated_database Object
+
+| Property | Type | Description |
+|----------|------|-------------|
+| connection_name | string | Name of the connection to the external metastore |
+| identifier | string | Unique identifier for the federated database |
+
+### target_database Object
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| catalog_id | string | - | Catalog ID of the target database |
+| database_name | string | - | Name of the target database |
+| region | string | null | Region of the target database |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| bucket_id | The name of the bucket |
-| bucket_arn | The ARN of the bucket |
-| bucket_domain_name | The bucket domain name |
-| versioning_enabled | Whether versioning is enabled |
-| bucket_keys | The bucket keys created in the bucket |
-| bucket_region | The AWS region where the bucket is located |
-
-## Event Notification Module
-
-### Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| enabled | Whether to create the S3 event notification | bool | true | no |
-| bucket_name | Name of the S3 bucket to configure notifications for | string | - | yes |
-| sqs_notifications | List of SQS queue notification configurations | list(object) | [] | no |
-| sns_notifications | List of SNS topic notification configurations | list(object) | [] | no |
-| lambda_notifications | List of Lambda function notification configurations | list(object) | [] | no |
-
-### SQS Notification Object Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| id | string | - | Unique identifier for the notification |
-| queue_arn | string | - | ARN of the SQS queue |
-| events | list(string) | ["s3:ObjectCreated:*"] | S3 events to trigger notification |
-| filter_prefix | string | null | Object key prefix filter |
-| filter_suffix | string | null | Object key suffix filter |
-
-### SNS Notification Object Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| id | string | - | Unique identifier for the notification |
-| topic_arn | string | - | ARN of the SNS topic |
-| events | list(string) | ["s3:ObjectCreated:*"] | S3 events to trigger notification |
-| filter_prefix | string | null | Object key prefix filter |
-| filter_suffix | string | null | Object key suffix filter |
-
-### Lambda Notification Object Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| id | string | - | Unique identifier for the notification |
-| lambda_function_arn | string | - | ARN of the Lambda function |
-| events | list(string) | ["s3:ObjectCreated:*"] | S3 events to trigger notification |
-| filter_prefix | string | null | Object key prefix filter |
-| filter_suffix | string | null | Object key suffix filter |
-
-### Event Notification Outputs
-
-| Name | Description |
-|------|-------------|
-| notification_configured | Whether S3 event notifications were configured |
-| bucket_name | The S3 bucket name with notifications configured |
-| sqs_notification_count | Number of SQS notification configurations |
-| sns_notification_count | Number of SNS notification configurations |
-| lambda_notification_count | Number of Lambda notification configurations |
+| database_id | The ID of the Glue Catalog database (catalog_id:name) |
+| database_name | The name of the Glue Catalog database |
+| database_arn | The ARN of the Glue Catalog database |
+| catalog_id | The ID of the Data Catalog |
+| location_uri | The location of the database (S3 path) |
+| description | The description of the database |
 
 ## Resources Created
 
-### Bucket Module
-
 | Resource | Description |
 |----------|-------------|
-| aws_s3_bucket | The S3 bucket |
-| aws_s3_bucket_versioning | Versioning configuration |
-| aws_s3_bucket_public_access_block | Blocks all public access |
-| aws_s3_bucket_server_side_encryption_configuration | Encryption configuration (conditional) |
-| aws_s3_bucket_policy | Bucket policy (conditional) |
-| aws_s3_object | Folder placeholders (conditional) |
-
-### Event Notification Module
-
-| Resource | Description |
-|----------|-------------|
-| aws_s3_bucket_notification | S3 event notification configuration |
+| aws_glue_catalog_database | The Glue Data Catalog database |
 
 ## Validation
 
 The module validates inputs and provides descriptive error messages for:
 
-- Empty bucket name
-- Bucket name exceeding 63 characters
-- Invalid sse_algorithm value
-- Missing kms_key_alias when using SSE-KMS
+- Empty database name
+- Database name exceeding 255 characters
+- Invalid characters in database name (only lowercase, numbers, underscores allowed)
+- Conflicting federated_database and target_database configurations
 
 ## Testing
 
@@ -375,50 +202,11 @@ go test -v -timeout 30m
 
 | Test | Description |
 |------|-------------|
-| TestS3BucketBasic | Basic bucket creation |
-| TestS3BucketVersioning | Bucket with versioning |
-| TestS3BucketSSES3 | Bucket with SSE-S3 encryption |
-| TestS3BucketSSEKMS | Bucket with SSE-KMS encryption |
-| TestS3BucketWithFolders | Bucket with folder structure |
+| TestGlueDatabaseBasic | Basic database creation |
+| TestGlueDatabaseWithLocation | Database with S3 location URI |
 
 AWS credentials must be configured via environment variables or AWS CLI profile.
-
-## CI/CD Configuration
-
-The CI workflow runs on:
-- Push to `main`, `feature/**`, and `bug/**` branches (when `modules/**` changes)
-- Pull requests to `main` (when `modules/**` changes)
-- Manual workflow dispatch
-
-The workflow includes:
-- Terraform validation and format checking
-- Examples validation
-- Terratest integration tests
-- Changelog generation (non-main branches)
-- Semantic release (main branch only)
-
-### GitHub Secrets
-
-| Secret | Description |
-|--------|-------------|
-| `AWS_ROLE_ARN` | IAM role ARN for OIDC authentication |
-
-### GitHub Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TERRAFORM_VERSION` | Terraform version for CI jobs | `1.3.0` |
-| `GO_VERSION` | Go version for Terratest | `1.21` |
 
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
-
-## Breaking Changes
-
-### v2.0.0
-
-- **Module path changed**: The bucket module path changed from `modules/aws-s3-bucket` to `modules/bucket`. Update your source references accordingly.
-- **Output renamed**: `versioning_enabled` output renamed to `versioning_status`.
-- **Examples restructured**: Examples moved from `examples/<name>` to `examples/bucket/<name>` and `examples/event-notification/<name>`.
-- **New event-notification module**: Added separate module for S3 event notifications supporting SQS, SNS, and Lambda.
