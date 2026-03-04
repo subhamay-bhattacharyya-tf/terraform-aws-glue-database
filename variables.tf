@@ -43,7 +43,7 @@ variable "glue_database_config" {
   }
 
   validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.glue_database_config.name))
+    condition     = can(regex("^[a-z0-9_]+$", var.glue_database_config.name))
     error_message = "Database name must contain only lowercase letters, numbers, and underscores."
   }
 
